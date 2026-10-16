@@ -3,8 +3,10 @@
 I test multiple K-means models with varying values of K to learn hidden clusters in song data from my favorite artists. To find the optimal value of K, I compare the final scores of the K-means objective function for each model:
 
 ```math
-J \(= \sum_{i=1}^{k} \sum_{x \in C_i} \Vert{}x - \mu_i\Vert{}^2\)
+J = \sum_{i=1}^{k} \sum_{x \in C_i} \Vert{}x - \mu_i\Vert{}^2
 ```
+\
+Let mu denote the set of centroids, and C represent the function that assigns points x to centroids. 
 
 (Summary of results here)
 
