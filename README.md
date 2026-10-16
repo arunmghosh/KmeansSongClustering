@@ -111,9 +111,8 @@ kmeans_artists/
 ## Installation & Usage
 
 ### Prerequisites
-The codebase requires Python 3.10+ and the following packages:
 ```bash
-pip install (add packages here)
+pip install pandas openpyxl numpy scipy matplotlib
 ```
 
 ### Run unittests
