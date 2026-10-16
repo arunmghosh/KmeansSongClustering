@@ -1,7 +1,7 @@
 """
 Integration and pipeline tests for experiment execution and stage outputs.
-Verifies preprocess loading, filtering, experiment result structure,
-stage metrics, and phase evaluations.
+Verifies preprocess loading, experiment result structure,
+stage metrics, and versatility & album trajectory shifts.
 """
 
 import unittest
@@ -12,20 +12,16 @@ import pandas as pd
 from preprocess import (
     load_data,
     get_features,
-    filter_phase1,
-    filter_phase2,
     FEATURE_COLUMNS,
-    PHASE1_ARTISTS,
-    PHASE2_ALBUMS,
 )
 from stats import (
     artist_cluster_distribution,
     artist_feature_averages,
     album_shifts,
     compute_versatility_scores,
-    evaluate_cluster_classification,
+    compare_centroids_to_artist_averages,
 )
-from experiment import run_experiment, run_phase1, run_phase2
+from experiment import run_experiment
 
 
 class TestExperimentPipeline(unittest.TestCase):
@@ -36,8 +32,8 @@ class TestExperimentPipeline(unittest.TestCase):
         cls.data_path = "artist_data.xlsx"
         cls.df = load_data(cls.data_path)
 
-    def test_preprocess_loading_and_filtering(self):
-        """Test loading artist_data.xlsx, verifying feature scales, and phase filtering."""
+    def test_preprocess_loading(self):
+        """Test loading artist_data.xlsx, verifying feature scales, and schema."""
         self.assertEqual(len(self.df), 167)
         self.assertEqual(
             list(self.df.columns),
@@ -53,15 +49,8 @@ class TestExperimentPipeline(unittest.TestCase):
         self.assertEqual(X.shape, (167, 3))
         self.assertEqual(X.dtype, np.float64)
 
-        # Phase 1: Olivia Rodrigo (24) + Gracie Abrams (32) = 56 songs
-        p1_df = filter_phase1(self.df)
-        self.assertEqual(len(p1_df), 56)
-        self.assertTrue(set(p1_df["Artist"].unique()).issubset(set(PHASE1_ARTISTS)))
-
-        # Phase 2: 6 albums
-        p2_df = filter_phase2(self.df)
-        self.assertEqual(len(p2_df["Album"].unique()), 6)
-        self.assertTrue(set(p2_df["Album"].unique()).issubset(set(PHASE2_ALBUMS)))
+        # Verify all 7 artists are present
+        self.assertEqual(len(self.df["Artist"].unique()), 7)
 
     def test_experiment_output_structure(self):
         """Test that run_experiment produces a dictionary with all required stages and keys."""
@@ -95,7 +84,7 @@ class TestExperimentPipeline(unittest.TestCase):
         self.assertIsInstance(res["stage4_album_shifts"], pd.DataFrame)
 
     def test_stage_metrics_computation(self):
-        """Test stage 3 and stage 4 metrics computation on known assignments."""
+        """Test stage 3 metrics computation on known assignments."""
         assignments = np.zeros(len(self.df), dtype=int)
         assignments[:50] = 1
 
@@ -106,6 +95,18 @@ class TestExperimentPipeline(unittest.TestCase):
         means = artist_feature_averages(self.df)
         self.assertEqual(len(means), 7)
         self.assertEqual(list(means.columns), FEATURE_COLUMNS)
+
+        # Comparison of dummy centroids to artist averages
+        centroids = np.array([[2.0, 3.0, 4.0], [5.0, 5.0, 5.0]])
+        comp = compare_centroids_to_artist_averages(centroids, means)
+        self.assertIn("distance_matrix", comp)
+        self.assertEqual(len(comp["closest_artist_per_cluster"]), 2)
+        self.assertEqual(len(comp["closest_cluster_per_artist"]), 7)
+
+    def test_versatility_and_album_shifts(self):
+        """Test stage 4 versatility scores and album center shifts."""
+        assignments = np.zeros(len(self.df), dtype=int)
+        assignments[:50] = 1
 
         versatility = compute_versatility_scores(self.df, assignments, k=2)
         self.assertEqual(len(versatility), 7)
@@ -122,34 +123,8 @@ class TestExperimentPipeline(unittest.TestCase):
                 set(shifts.columns)
             )
         )
-
-    def test_phase_evaluations(self):
-        """Test that Phase 1 and Phase 2 pipelines compute valid classification metrics."""
-        # Phase 1 test
-        p1 = run_phase1(
-            data_path=self.data_path,
-            min_k=2,
-            max_k=3,
-            n_trials=2,
-            random_state=42,
-        )
-        self.assertEqual(p1["phase"], 1)
-        self.assertEqual(p1["num_samples"], 56)
-        self.assertGreaterEqual(p1["best_accuracy"], 0.0)
-        self.assertLessEqual(p1["best_accuracy"], 1.0)
-
-        # Phase 2 test
-        p2 = run_phase2(
-            data_path=self.data_path,
-            min_k=3,
-            max_k=4,
-            n_trials=2,
-            random_state=42,
-        )
-        self.assertEqual(p2["phase"], 2)
-        self.assertGreater(p2["num_samples"], 0)
-        self.assertGreaterEqual(p2["best_accuracy"], 0.0)
-        self.assertLessEqual(p2["best_accuracy"], 1.0)
+        # Shift distances must be non-negative
+        self.assertTrue((shifts["Shift_Distance"] >= 0).all())
 
 
 if __name__ == "__main__":

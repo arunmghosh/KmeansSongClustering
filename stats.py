@@ -3,7 +3,6 @@ Statistical analysis module for K-means song clustering.
 Computes metrics for Stages 3 and 4 of results:
 - Stage 3: Artist distribution across clusters and comparison to artist averages
 - Stage 4: Artist versatility (Gini Impurity) and album trajectory shifts
-- Classification metrics for Phase 1 (binary) and Phase 2 (multinomial).
 """
 
 from typing import Any, Dict, List, Optional, Tuple, Union

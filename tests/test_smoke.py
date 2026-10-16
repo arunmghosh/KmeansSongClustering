@@ -1,10 +1,12 @@
 """
 Rapid end-to-end integration smoke tests.
-Verifies full experiment, Phase 1, Phase 2, and CLI smoke test runner.
+Verifies full experiment, trials averaging, custom parameters, and CLI smoke test runner.
 """
 
 import unittest
-from experiment import run_experiment, run_phase1, run_phase2, run_smoke_test
+from experiment import run_experiment, run_smoke_test
+from kmeans import run_kmeans_trials
+from preprocess import load_data, get_features
 from runner import main as runner_main
 
 
@@ -14,6 +16,8 @@ class TestSmokeIntegration(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.data_path = "artist_data.xlsx"
+        cls.df = load_data(cls.data_path)
+        cls.X = get_features(cls.df)
 
     def test_smoke_full_experiment(self):
         """Smoke test full experiment pipeline on small K range and minimal trials."""
@@ -29,31 +33,28 @@ class TestSmokeIntegration(unittest.TestCase):
         self.assertIn(res["optimal_k"], [2, 3])
         self.assertGreater(len(res["k_scores"]), 0)
 
-    def test_smoke_phase1(self):
-        """Smoke test Phase 1 binary classification pipeline."""
-        p1 = run_phase1(
-            data_path=self.data_path,
-            min_k=2,
-            max_k=3,
-            n_trials=2,
+    def test_smoke_trials_averaging(self):
+        """Smoke test run_kmeans_trials multi-trial execution and averaging."""
+        res = run_kmeans_trials(
+            self.X,
+            k=3,
+            n_trials=3,
+            max_iters=50,
             random_state=42,
         )
-        self.assertEqual(p1["phase"], 1)
-        self.assertIn("best_accuracy", p1)
-        self.assertGreaterEqual(p1["best_accuracy"], 0.0)
+        self.assertEqual(res["k"], 3)
+        self.assertEqual(res["centroids"].shape, (3, 3))
+        self.assertEqual(len(res["assignments"]), len(self.X))
+        self.assertGreater(res["score"], 0.0)
+        self.assertEqual(len(res["trial_scores"]), 3)
 
-    def test_smoke_phase2(self):
-        """Smoke test Phase 2 multinomial album classification pipeline."""
-        p2 = run_phase2(
+    def test_smoke_custom_k_range(self):
+        """Smoke test run_smoke_test helper function."""
+        success = run_smoke_test(
             data_path=self.data_path,
-            min_k=3,
-            max_k=4,
-            n_trials=2,
             random_state=42,
         )
-        self.assertEqual(p2["phase"], 2)
-        self.assertIn("best_accuracy", p2)
-        self.assertGreaterEqual(p2["best_accuracy"], 0.0)
+        self.assertTrue(success)
 
     def test_cli_smoke_flag(self):
         """Smoke test runner.py CLI entrypoint with --smoke-test flag."""

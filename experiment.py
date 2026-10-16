@@ -109,128 +109,10 @@ def run_experiment(
     }
 
 
-def run_phase1(
-    data_path: Union[str, Path] = "artist_data.xlsx",
-    min_k: int = 2,
-    max_k: int = 8,
-    n_trials: int = 25,
-    random_state: int = 42,
-    output_dir: Optional[Union[str, Path]] = None,
-) -> Dict[str, Any]:
-    """Execute Phase 1: Binary classification of songs by artist
-
-    (Olivia Rodrigo vs Gracie Abrams).
-
-    Args:
-        data_path: Path to dataset
-        min_k: Minimum K value to evaluate
-        max_k: Maximum K value to evaluate
-        n_trials: Number of trials per K
-        random_state: Random seed
-        output_dir: Optional plot directory
-
-    Returns:
-        dict: Phase 1 results across tested K values.
-    """
-    df = preprocess.load_data(data_path)
-    p1_df = preprocess.filter_phase1(df)
-    X = preprocess.get_features(p1_df)
-
-    evaluations = {}
-    best_acc = -1.0
-    best_k = min_k
-
-    for k in range(min_k, max_k + 1):
-        res = kmeans.run_kmeans_trials(
-            X, k=k, n_trials=n_trials, random_state=random_state
-        )
-        clf_eval = stats.evaluate_cluster_classification(
-            p1_df["Artist"], res["assignments"]
-        )
-        evaluations[k] = {
-            "score": res["score"],
-            "accuracy": clf_eval["accuracy"],
-            "cluster_to_artist": clf_eval["cluster_to_class"],
-            "contingency_matrix": clf_eval["contingency_matrix"],
-            "centroids": res["centroids"],
-            "assignments": res["assignments"],
-        }
-        if clf_eval["accuracy"] > best_acc:
-            best_acc = clf_eval["accuracy"]
-            best_k = k
-
-    return {
-        "phase": 1,
-        "target": "Artist (Olivia Rodrigo vs Gracie Abrams)",
-        "num_samples": len(p1_df),
-        "k_evaluations": evaluations,
-        "best_k_by_accuracy": best_k,
-        "best_accuracy": best_acc,
-    }
-
-
-def run_phase2(
-    data_path: Union[str, Path] = "artist_data.xlsx",
-    min_k: int = 3,
-    max_k: int = 8,
-    n_trials: int = 25,
-    random_state: int = 42,
-    output_dir: Optional[Union[str, Path]] = None,
-) -> Dict[str, Any]:
-    """Execute Phase 2: Multinomial classification of songs across the 6 albums.
-
-    Args:
-        data_path: Path to dataset
-        min_k: Minimum K value to evaluate
-        max_k: Maximum K value to evaluate
-        n_trials: Number of trials per K
-        random_state: Random seed
-        output_dir: Optional plot directory
-
-    Returns:
-        dict: Phase 2 results across tested K values.
-    """
-    df = preprocess.load_data(data_path)
-    p2_df = preprocess.filter_phase2(df)
-    X = preprocess.get_features(p2_df)
-
-    evaluations = {}
-    best_acc = -1.0
-    best_k = min_k
-
-    for k in range(min_k, max_k + 1):
-        res = kmeans.run_kmeans_trials(
-            X, k=k, n_trials=n_trials, random_state=random_state
-        )
-        clf_eval = stats.evaluate_cluster_classification(
-            p2_df["Album"], res["assignments"]
-        )
-        evaluations[k] = {
-            "score": res["score"],
-            "accuracy": clf_eval["accuracy"],
-            "cluster_to_album": clf_eval["cluster_to_class"],
-            "contingency_matrix": clf_eval["contingency_matrix"],
-            "centroids": res["centroids"],
-            "assignments": res["assignments"],
-        }
-        if clf_eval["accuracy"] > best_acc:
-            best_acc = clf_eval["accuracy"]
-            best_k = k
-
-    return {
-        "phase": 2,
-        "target": "Album (6 albums)",
-        "num_samples": len(p2_df),
-        "k_evaluations": evaluations,
-        "best_k_by_accuracy": best_k,
-        "best_accuracy": best_acc,
-    }
-
-
 def run_smoke_test(
     data_path: Union[str, Path] = "artist_data.xlsx", random_state: int = 42
 ) -> bool:
-    """Run a rapid end-to-end integration check across both phases and full pipeline.
+    """Run a rapid end-to-end integration check across the experiment pipeline.
 
     Args:
         data_path: Path to dataset
@@ -239,7 +121,6 @@ def run_smoke_test(
     Returns:
         bool: True if all checks pass.
     """
-    # Quick run of full pipeline
     full_res = run_experiment(
         data_path=data_path,
         min_k=2,
@@ -249,28 +130,10 @@ def run_smoke_test(
     )
     assert "optimal_k" in full_res
     assert full_res["optimal_k"] in [2, 3]
-    assert len(full_res["stage4_versatility"]) > 0
-
-    # Quick run of Phase 1
-    p1_res = run_phase1(
-        data_path=data_path,
-        min_k=2,
-        max_k=3,
-        n_trials=2,
-        random_state=random_state,
-    )
-    assert p1_res["best_accuracy"] >= 0.0
-
-    # Quick run of Phase 2
-    p2_res = run_phase2(
-        data_path=data_path,
-        min_k=3,
-        max_k=4,
-        n_trials=2,
-        random_state=random_state,
-    )
-    assert p2_res["best_accuracy"] >= 0.0
-
+    assert len(full_res["stage4_versatility"]) == 7
+    assert len(full_res["stage4_album_shifts"]) == 7
+    assert "stage3_artist_crosstab" in full_res
+    assert "stage2_inter_cluster_distances" in full_res
     return True
 
 
