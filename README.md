@@ -28,15 +28,16 @@ Once I use the chosen model to cluster the songs, I will analyze the distributio
 
 The dataset, artist_data.xlsx, contains 167 songs collectively written by 7 artists (Sabrina Carpenter, Gracie Abrams, Olivia Rodrigo, Erin LeCount, Tate McRae, Against The Current, and Crown The Empire). Each observation has the song name, an artist label, album label, and scores for energy, positivity, and introspectiveness. Here is the specification for that data:
 
-Score	Energy	          Positivity	   Introspectiveness
-0	    Slow, whispery	  Hopelessness	 Singular external 
-1	    Slow acoustic	    Anger	         Group external 
-2	    Slow rock ballad	Annoyance	     Society
-3	    Moderate pop	    Bittersweet	   Social norms
-4	    Classic rock	    Hopeful	       Group internal
-5	    Fast rock	        Redemption	   Couple internal
-6	    Fast punk	        Love	         Habit analysis
-7	    Fast metal	      Elation	       Fully internal 
+| Score | Energy | Positivity | Introspectiveness |
+|---|---|---|---|
+| 0 | Slow, whispery | Hopelessness | Singular external |
+| 1 | Slow acoustic | Anger | Group external |
+| 2 | Slow rock ballad | Annoyance | Society |
+| 3 | Moderate pop | Bittersweet | Social norms |
+| 4 | Classic rock | Hopeful | Group internal |
+| 5 | Fast rock | Redemption | Couple internal |
+| 6 | Fast punk | Love | Habit analysis |
+| 7 | Fast metal | Elation | Fully internal |
 
 ### Prediction
 I stored the data in a google sheet, and used Gemini to analyze trends to gain some level of intuition before running K-means. 
@@ -73,6 +74,14 @@ Here were my results from running the full experiment:
 
 ### 4. Versatility 
 
+To quantify the versatility of an artist's craft, I compute a versatility score for each artist based on the Gini Impurity of their song cluster assignments:
+
+```math
+I_G = 1 - \sum_{i=1}^{k} p_i^2
+```
+\
+Where $k$ denotes the number of clusters, and $p_i$ represents the proportion of an artist's songs assigned to cluster $i$. A score of 0 indicates that all songs belong to a single cluster (highly focused style), whereas higher values indicate songs scattered across multiple distinct clusters (greater versatility).
+
 (Compare centers of each artists' first and last album, and analyze the distribution of centroid assignments for their songs)
 (Compute a versatility score for each artist based on the Gini Impurity test using the centroid assignments as classes)
 
@@ -98,6 +107,11 @@ kmeans_artists/
 ├── runner.py                 # CLI interface for custom trials, rapid smoke tests, and full experiment run
 ├── Kmeans_SongClusters.pdf   # Original mathematical problem specification
 ├── artist_data.xlsx          # Original dataset 
+├── plots/                    # Directory for generated experiment visualizations
+│   ├── elbow_curve.png       # Objective function score (WCSS) vs K
+│   ├── song_clusters_3d.png  # 3D scatter plot of songs colored by cluster with centroids
+│   ├── songs_by_artist_3d.png# 3D scatter plot of songs colored by artist
+│   └── side_by_side_3d.png   # Side-by-side comparison of artist vs cluster assignments
 ├── tests/                    # Automated unit and integration test suite
 │   ├── test_models.py        # Tests the logic of the K-means models
 │   ├── test_math.py          # Ensure that all of the calculations are mathematically correct

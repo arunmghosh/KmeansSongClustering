@@ -231,3 +231,58 @@ def save_experiment_plots(
     fig.tight_layout()
     fig.savefig(output_dir / "songs_by_artist_3d.png", dpi=200)
     plt.close(fig)
+
+    # 4. Side-by-side 3D scatter plots: Artist vs Optimal Clusters
+    fig = plt.figure(figsize=(16, 7))
+
+    ax1 = fig.add_subplot(121, projection="3d")
+    for idx, artist in enumerate(artists):
+        mask = (df["Artist"] == artist).to_numpy()
+        ax1.scatter(
+            X[mask, 0],
+            X[mask, 1],
+            X[mask, 2],
+            label=artist,
+            color=colors[idx],
+            s=35,
+            alpha=0.8,
+            edgecolors="w",
+        )
+    ax1.set_xlabel("Energy")
+    ax1.set_ylabel("Positivity")
+    ax1.set_zlabel("Introspectiveness")
+    ax1.set_title("Songs Color-Coded by Artist")
+    ax1.legend(loc="upper left", fontsize=8)
+
+    ax2 = fig.add_subplot(122, projection="3d")
+    ax2.scatter(
+        X[:, 0],
+        X[:, 1],
+        X[:, 2],
+        c=assignments,
+        cmap="tab10",
+        s=35,
+        alpha=0.7,
+        edgecolors="w",
+    )
+    ax2.scatter(
+        centroids[:, 0],
+        centroids[:, 1],
+        centroids[:, 2],
+        c="red",
+        marker="X",
+        s=120,
+        edgecolors="black",
+        linewidths=1.5,
+        label="Centroids",
+    )
+    ax2.set_xlabel("Energy")
+    ax2.set_ylabel("Positivity")
+    ax2.set_zlabel("Introspectiveness")
+    ax2.set_title(f"Optimal Song Clusters (K={optimal_k})")
+    ax2.legend(loc="upper left", fontsize=8)
+
+    fig.suptitle("Comparison: Artists vs Optimal K-Means Clusters", fontsize=15)
+    fig.tight_layout()
+    fig.savefig(output_dir / "side_by_side_3d.png", dpi=200)
+    plt.close(fig)
