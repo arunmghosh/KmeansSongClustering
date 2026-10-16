@@ -129,21 +129,9 @@ python3 runner.py --smoke-test
 
 ### Run the experiment
 
-#### 1. Run Full Experiment
 ```bash
-python3 runner.py 
+python3 runner.py
 ```
-
-#### 2. Run Individual Phases
-- **Phase 1 Only** (Binary classification of songs by artist: Olivia Rodrigo vs Gracie Abrams):
-  ```bash
-  python3 runner.py --phase 1 --trials 25
-  ```
-
-- **Phase 2 Only** (Multinomial classification of songs across the 6 albums):
-  ```bash
-  python3 runner.py --phase 2 --trials 25 
-  ```
 
 ### Command-Line Arguments Reference
 | Argument | Description | Default |
