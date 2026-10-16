@@ -54,20 +54,25 @@ Here were my results from running the full experiment:
 ### 1. Optimal Value of K
 
 (Results here)
-(Include figures for the 8 K-means models, 3D scatter-plots color coded by cluster)
+
+![Elbow Curve: Objective Function Score vs K](plots/elbow_curve.png)
+![Song Clusters for Optimal K](plots/song_clusters_3d.png)
  
 ---
 
 ### 2. Distribution of Clusters
 
-(Plot centroids for each of the 8 models)
 (Comment on which models space out centroids more than others)
+
+![Cluster Centroid Distribution](plots/song_clusters_3d.png)
  
 ---
 
 ### 3. Distribution of Artists' Songs
 
-(Make 3D scatterplot of song data and color code by artist, put side-by-side with the cluster-graph for the optimal K-value)
+![Songs by Artist (3D Feature Space)](plots/songs_by_artist_3d.png)
+![Side-by-Side Comparison: Artists vs Optimal Clusters](plots/side_by_side_3d.png)
+
 (Compare centroids to average scores of each feature for each artist)
 
 ---
