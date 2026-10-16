@@ -56,7 +56,7 @@ Here were my results from running the full experiment:
 (Results here)
 
 ![Elbow Curve: Objective Function Score vs K](plots/elbow_curve.png)
-![Song Clusters for Optimal K](plots/song_clusters_3d.png)
+![All 8 K-Means Models Comparison Side-by-Side (K=7 to K=14)](plots/all_kmeans_models_3d.png)
  
 ---
 
@@ -71,7 +71,7 @@ Here were my results from running the full experiment:
 ### 3. Distribution of Artists' Songs
 
 ![Songs by Artist (3D Feature Space)](plots/songs_by_artist_3d.png)
-![Side-by-Side Comparison: Artists vs Optimal Clusters](plots/side_by_side_3d.png)
+![Cluster Centroids vs. Artist Average Coordinates](plots/centroids_vs_artists_3d.png)
 
 (Compare centroids to average scores of each feature for each artist)
 
@@ -87,8 +87,17 @@ I_G = 1 - \sum_{i=1}^{k} p_i^2
 \
 Where $k$ denotes the number of clusters, and $p_i$ represents the proportion of an artist's songs assigned to cluster $i$. A score of 0 indicates that all songs belong to a single cluster (highly focused style), whereas higher values indicate songs scattered across multiple distinct clusters (greater versatility).
 
+| Artist | Song Count | Clusters Touched | Gini Impurity | Normalized Gini |
+|---|:---:|:---:|:---:|:---:|
+| Against The Current | 19 | 10 | 0.8753 | 0.9427 |
+| Olivia Rodrigo | 24 | 9 | 0.8611 | 0.9274 |
+| Sabrina Carpenter | 25 | 9 | 0.8416 | 0.9063 |
+| Tate McRae | 27 | 9 | 0.8368 | 0.9011 |
+| Gracie Abrams | 32 | 9 | 0.8281 | 0.8918 |
+| Erin LeCount | 12 | 6 | 0.7778 | 0.8376 |
+| Crown The Empire | 28 | 6 | 0.7168 | 0.7720 |
+
 (Compare centers of each artists' first and last album, and analyze the distribution of centroid assignments for their songs)
-(Compute a versatility score for each artist based on the Gini Impurity test using the centroid assignments as classes)
 
 ---
 
@@ -114,9 +123,10 @@ kmeans_artists/
 ├── artist_data.xlsx          # Original dataset 
 ├── plots/                    # Directory for generated experiment visualizations
 │   ├── elbow_curve.png       # Objective function score (WCSS) vs K
+│   ├── all_kmeans_models_3d.png # Side-by-side 3D scatter plots for all 8 K-means models (without centroids)
 │   ├── song_clusters_3d.png  # 3D scatter plot of songs colored by cluster with centroids
 │   ├── songs_by_artist_3d.png# 3D scatter plot of songs colored by artist
-│   └── side_by_side_3d.png   # Side-by-side comparison of artist vs cluster assignments
+│   └── centroids_vs_artists_3d.png # 3D plot comparing cluster centroids and artist average coordinates
 ├── tests/                    # Automated unit and integration test suite
 │   ├── test_models.py        # Tests the logic of the K-means models
 │   ├── test_math.py          # Ensure that all of the calculations are mathematically correct

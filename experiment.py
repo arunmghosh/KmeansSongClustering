@@ -91,6 +91,7 @@ def run_experiment(
             optimal_k=optimal_k,
             optimal_model=optimal_model,
             output_dir=Path(output_dir),
+            k_models=k_results,
         )
 
     return {
@@ -144,6 +145,7 @@ def save_experiment_plots(
     optimal_k: int,
     optimal_model: Dict[str, Any],
     output_dir: Path,
+    k_models: Optional[Dict[int, Any]] = None,
 ) -> None:
     """Generate and save publication-quality figures for the experiment."""
     import matplotlib
@@ -168,7 +170,41 @@ def save_experiment_plots(
     fig.savefig(output_dir / "elbow_curve.png", dpi=200)
     plt.close(fig)
 
-    # 2. 3D scatter plot of songs colored by cluster (for optimal K)
+    # 2. Side-by-side comparison of all K-means models (without centroids)
+    if k_models is not None and len(k_models) > 0:
+        models_sorted = sorted(k_models.keys())
+        n_models = len(models_sorted)
+        n_cols = 4 if n_models >= 4 else n_models
+        n_rows = (n_models + n_cols - 1) // n_cols
+
+        fig = plt.figure(figsize=(5 * n_cols, 4.5 * n_rows))
+        for idx, k in enumerate(models_sorted):
+            ax = fig.add_subplot(n_rows, n_cols, idx + 1, projection="3d")
+            model_assigns = k_models[k]["assignments"]
+            ax.scatter(
+                X[:, 0],
+                X[:, 1],
+                X[:, 2],
+                c=model_assigns,
+                cmap="tab20",
+                s=20,
+                alpha=0.7,
+                edgecolors="w",
+                linewidths=0.3,
+            )
+            score_text = f" (Score: {k_scores[k]:.1f})" if k in k_scores else ""
+            ax.set_title(f"K = {k}{score_text}", fontsize=11)
+            ax.set_xlabel("Energy", fontsize=8)
+            ax.set_ylabel("Positivity", fontsize=8)
+            ax.set_zlabel("Introspect.", fontsize=8)
+            ax.tick_params(labelsize=7)
+
+        fig.suptitle("Comparison of K-Means Song Clusters (Side-by-Side)", fontsize=16)
+        fig.tight_layout()
+        fig.savefig(output_dir / "all_kmeans_models_3d.png", dpi=200)
+        plt.close(fig)
+
+    # 3. 3D scatter plot of songs colored by cluster (for optimal K with centroids)
     fig = plt.figure(figsize=(9, 7))
     ax = fig.add_subplot(111, projection="3d")
     assignments = optimal_model["assignments"]
@@ -232,57 +268,71 @@ def save_experiment_plots(
     fig.savefig(output_dir / "songs_by_artist_3d.png", dpi=200)
     plt.close(fig)
 
-    # 4. Side-by-side 3D scatter plots: Artist vs Optimal Clusters
-    fig = plt.figure(figsize=(16, 7))
+    # 4. Single 3D plot: Cluster Centroids vs. Artist Average Coordinates (no individual songs)
+    fig = plt.figure(figsize=(10, 8))
+    ax = fig.add_subplot(111, projection="3d")
 
-    ax1 = fig.add_subplot(121, projection="3d")
-    for idx, artist in enumerate(artists):
-        mask = (df["Artist"] == artist).to_numpy()
-        ax1.scatter(
-            X[mask, 0],
-            X[mask, 1],
-            X[mask, 2],
-            label=artist,
-            color=colors[idx],
-            s=35,
-            alpha=0.8,
-            edgecolors="w",
+    # Compute artist average coordinates
+    artist_means = stats.artist_feature_averages(df)
+    artists_list = artist_means.index.tolist()
+    artist_coords = artist_means.to_numpy()
+
+    # Plot artist average coordinates
+    for idx, artist in enumerate(artists_list):
+        coord = artist_coords[idx]
+        ax.scatter(
+            coord[0],
+            coord[1],
+            coord[2],
+            label=f"Artist: {artist}",
+            color=colors[idx % len(colors)],
+            s=120,
+            marker="o",
+            edgecolors="black",
+            linewidths=1.2,
+            alpha=0.9,
         )
-    ax1.set_xlabel("Energy")
-    ax1.set_ylabel("Positivity")
-    ax1.set_zlabel("Introspectiveness")
-    ax1.set_title("Songs Color-Coded by Artist")
-    ax1.legend(loc="upper left", fontsize=8)
+        ax.text(
+            coord[0] + 0.1,
+            coord[1] + 0.1,
+            coord[2] + 0.1,
+            artist,
+            fontsize=8,
+            fontweight="bold",
+        )
 
-    ax2 = fig.add_subplot(122, projection="3d")
-    ax2.scatter(
-        X[:, 0],
-        X[:, 1],
-        X[:, 2],
-        c=assignments,
-        cmap="tab10",
-        s=35,
-        alpha=0.7,
-        edgecolors="w",
-    )
-    ax2.scatter(
-        centroids[:, 0],
-        centroids[:, 1],
-        centroids[:, 2],
-        c="red",
-        marker="X",
-        s=120,
-        edgecolors="black",
-        linewidths=1.5,
-        label="Centroids",
-    )
-    ax2.set_xlabel("Energy")
-    ax2.set_ylabel("Positivity")
-    ax2.set_zlabel("Introspectiveness")
-    ax2.set_title(f"Optimal Song Clusters (K={optimal_k})")
-    ax2.legend(loc="upper left", fontsize=8)
+    # Plot cluster centroids
+    for c_idx in range(len(centroids)):
+        c_coord = centroids[c_idx]
+        ax.scatter(
+            c_coord[0],
+            c_coord[1],
+            c_coord[2],
+            color="red",
+            marker="X",
+            s=160,
+            edgecolors="black",
+            linewidths=1.5,
+            label="Cluster Centroid" if c_idx == 0 else None,
+        )
+        ax.text(
+            c_coord[0] + 0.1,
+            c_coord[1] + 0.1,
+            c_coord[2] + 0.1,
+            f"C{c_idx}",
+            fontsize=8,
+            color="darkred",
+            fontweight="bold",
+        )
 
-    fig.suptitle("Comparison: Artists vs Optimal K-Means Clusters", fontsize=15)
+    ax.set_xlabel("Energy", fontsize=11)
+    ax.set_ylabel("Positivity", fontsize=11)
+    ax.set_zlabel("Introspectiveness", fontsize=11)
+    ax.set_title(
+        f"Cluster Centroids vs. Artist Average Coordinates (Optimal K={optimal_k})",
+        fontsize=13,
+    )
+    ax.legend(bbox_to_anchor=(1.05, 1), loc="upper left", fontsize=8)
     fig.tight_layout()
-    fig.savefig(output_dir / "side_by_side_3d.png", dpi=200)
+    fig.savefig(output_dir / "centroids_vs_artists_3d.png", dpi=200)
     plt.close(fig)
