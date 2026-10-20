@@ -39,12 +39,6 @@ The dataset, artist_data.xlsx, contains 167 songs collectively written by 7 arti
 | 6 | Fast punk | Love | Habit analysis |
 | 7 | Fast metal | Elation | Fully internal |
 
-### Prediction
-I stored the data in a google sheet, and used Gemini to analyze trends to gain some level of intuition before running K-means. 
-\
-(put in pictures of tables)
-
-###
 ---
 
 ## Results & Analysis
@@ -66,7 +60,9 @@ Across 10 independent random initialization trials for each value of $K \in [7, 
 | **$K=13$** | 364.36 | -42.84% |
 | **$K=14$** | **331.82** | **-47.95%** |
 
-As expected, $K=14$ produces the minimum WCSS score ($J = 331.82$). Below are the final aligned and averaged centroid coordinates for both the baseline $K=7$ case and the optimal $K=14$ case:
+![Elbow Curve: Objective Function Score vs K](plots/elbow_curve.png)
+
+As expected, $K=14$ produces the minimum WCSS score ($J = 331.82$). Below are the final aligned and averaged centroid coordinates for both the baseline $K=7$ case and the $K=14$ case:
 
 #### Centroid Coordinates for $K = 7$ ($J = 637.47$)
 
@@ -99,27 +95,28 @@ As expected, $K=14$ produces the minimum WCSS score ($J = 331.82$). Below are th
 | **C12** | 1.576 | 1.137 | 3.506 | 1 | Niche outlier (*Tate McRae - Nostalgia*) / bittersweet low-tempo |
 | **C13** | 6.924 | 1.428 | 2.176 | 9 | Heavy fast metal / externally focused rage |
 
-![Elbow Curve: Objective Function Score vs K](plots/elbow_curve.png)
+We can immediately observe that despite the optimization of the WCSS objective, the $K = 14$ model over-partitions the data, resulting in singleton cluster and an otherwise uneven song distribution. The clusters are harder to interpret musically, which is the primary goal of this project. Below, I investigate other ways to determine the optimal value of $K$. For the sake of completeness, here are all of the models I tested: 
+
 ![All 8 K-Means Models Comparison Side-by-Side (K=7 to K=14)](plots/all_kmeans_models_3d.png)
  
 ---
 
 ### 2. Distribution of Clusters
 
-While the WCSS objective function $J$ monotonically decreases as $K$ increases (favoring $K=14$ from a purely mathematical standpoint), WCSS alone does not penalize over-partitioning, unbalanced clusters, or singleton isolation. To evaluate the structural health of each model, we compute the **standard deviation of per-cluster song counts** ($\text{Sample } s \text{ and Population } \sigma$), along with the **Coefficient of Variation** ($CV = \frac{s}{\mu}$), across all evaluated models ($K \in [7, 14]$):
+While the WCSS objective function $J$ monotonically decreases as $K$ increases (favoring $K=14$ from a purely mathematical standpoint), WCSS alone does not penalize over-partitioning, unbalanced clusters, or singleton isolation. To evaluate the practical use of each model, we compute the **standard deviation of per-cluster song counts** across all evaluated models ($K \in [7, 14]$):
 
 #### Per-Cluster Song Count Distribution & Standard Deviation Across $K$
 
-| $K$ | WCSS Score | Mean Songs ($\mu$) | Sample Std ($s$) | Pop. Std ($\sigma$) | Coeff. of Variation ($CV$) | Min / Max Songs | Per-Cluster Song Counts $[C_0, \dots, C_{k-1}]$ |
-|:---:|:---:|:---:|:---:|:---:|:---:|:---:|---|
-| **$K=7$** | 637.47 | 23.86 | 9.41 | 8.71 | 0.3944 | 8 / 39 | $[20, 24, 27, 8, 21, 39, 28]$ |
-| **$K=8$** | 546.57 | 20.88 | **6.83** | **6.39** | **0.3271** | 12 / 31 | $[17, 26, 19, 13, 27, 31, 22, 12]$ |
-| **$K=9$** | 546.79 | 18.56 | 10.55 | 9.95 | 0.5684 | 6 / 37 | $[16, 37, 22, 10, 16, 32, 8, 6, 20]$ |
-| **$K=10$** | 488.22 | 16.70 | 9.94 | 9.43 | 0.5952 | 3 / 34 | $[8, 25, 11, 3, 14, 34, 7, 27, 21, 17]$ |
-| **$K=11$** | 419.52 | 15.18 | **5.83** | **5.56** | **0.3841** | 6 / 25 | $[11, 19, 11, 6, 14, 23, 10, 25, 19, 13, 16]$ |
-| **$K=12$** | 400.67 | 13.92 | 7.94 | 7.60 | 0.5704 | 4 / 26 | $[18, 18, 17, 4, 7, 12, 4, 25, 21, 7, 8, 26]$ |
-| **$K=13$** | 364.36 | 12.85 | 5.94 | 5.71 | 0.4623 | 3 / 25 | $[13, 15, 10, 9, 25, 11, 3, 15, 18, 13, 12, 19, 4]$ |
-| **$K=14$** | **331.82** | 11.93 | **5.27** | **5.08** | 0.4417 | 1 / 24 | $[12, 11, 13, 7, 24, 14, 11, 12, 18, 9, 11, 15, 1, 9]$ |
+| $K$ | WCSS Score | Mean Songs ($\mu$) | Pop. Std ($\sigma$) | Min / Max Songs | Per-Cluster Song Counts $[C_0, \dots, C_{k-1}]$ |
+|:---:|:---:|:---:|:---:|:---:|---|
+| **$K=7$** | 637.47 | 23.86 | 8.71 | 8 / 39 | $[20, 24, 27, 8, 21, 39, 28]$ |
+| **$K=8$** | 546.57 | 20.88 | **6.39** | 12 / 31 | $[17, 26, 19, 13, 27, 31, 22, 12]$ |
+| **$K=9$** | 546.79 | 18.56 | 9.95 | 6 / 37 | $[16, 37, 22, 10, 16, 32, 8, 6, 20]$ |
+| **$K=10$** | 488.22 | 16.70 | 9.43 | 3 / 34 | $[8, 25, 11, 3, 14, 34, 7, 27, 21, 17]$ |
+| **$K=11$** | 419.52 | 15.18 | **5.56** | 6 / 25 | $[11, 19, 11, 6, 14, 23, 10, 25, 19, 13, 16]$ |
+| **$K=12$** | 400.67 | 13.92 | 7.60 | 4 / 26 | $[18, 18, 17, 4, 7, 12, 4, 25, 21, 7, 8, 26]$ |
+| **$K=13$** | 364.36 | 12.85 | 5.71 | 3 / 25 | $[13, 15, 10, 9, 25, 11, 3, 15, 18, 13, 12, 19, 4]$ |
+| **$K=14$** | **331.82** | 11.93 | **5.08** | 1 / 24 | $[12, 11, 13, 7, 24, 14, 11, 12, 18, 9, 11, 15, 1, 9]$ |
 
 #### Inter-Cluster Centroid Distances
 
@@ -138,19 +135,9 @@ To check whether models space out centroids effectively or create redundant, ove
 
 #### Analysis: Which Value of $K$ is Best?
 
-Combining the within-cluster sum of squares, cluster count standard deviation, and inter-centroid spacing leads to critical observations:
+Combining the within-cluster sum of squares, cluster count standard deviation, and inter-centroid spacing, I came to the conclusion that $K=8$ is optimal. We already observed that $K=14$ can't be the best model because it contains a singleton cluster. A singleton cluster inherently depresses the WCSS objective, and also doesn't create a cluster that has a real world musical meaning. By contrast, $K=8$ tied for the lowest range of per-cluster song counts, and had the greatest minimum cluster separation distance. In other words, it had the best combination of song spread among clusters and cluster spacing, balancing interpretability and mathematical optimization. 
 
-1. **The Overfitting & Fragmentation of $K=14$**:
-   - Although $K=14$ yields the lowest absolute count standard deviation ($s = 5.27$) and the lowest WCSS ($331.82$), it suffers from **singleton isolation**: Cluster 12 contains **only 1 song** (*Tate McRae - Nostalgia*).
-   - This indicates that $K=14$ artificially depresses the objective function score by carving out a private cluster for an isolated outlier rather than learning a generalized sonic category.
-2. **Why $K=8$ is the Structurally Superior Macro Model**:
-   - $K=8$ achieves the lowest **Coefficient of Variation ($CV = 0.3271$)**, meaning its songs are more evenly distributed relative to its cluster capacity than any other model.
-   - Its cluster sizes are robust and balanced, ranging strictly between **12 and 31 songs**, with no starved or singleton clusters.
-   - Furthermore, $K=8$ achieves the highest minimum inter-centroid distance among small $K$ models (**2.114**), ensuring that no two clusters are redundant or mergeable.
-3. **$K=11$ as an Optimal Fine-Grained Trade-off**:
-   - If greater granularity is needed, $K=11$ offers an excellent compromise: a low standard deviation ($s = 5.83, CV = 0.3841$), healthy cluster populations (6 to 25 songs with zero singletons), and a substantial **34.2% WCSS reduction** relative to $K=7$.
-4. **Poorly Balanced Intermediate Models ($K=9, K=10, K=12$)**:
-   - $K=9$ and $K=10$ exhibit the highest standard deviations ($s = 10.55$ and $s = 9.94, CV \approx 0.57 - 0.60$). In both cases, over one-third of the dataset is swallowed by just two oversized clusters (up to 37 songs) while peripheral clusters hold as few as 3 to 6 songs.
+A close second, and arguably another candidate for first, was $K = 11$, which is better mathematically, and was the model that tied $K=8$ for the lowest range of per-cluster song counts. The only reason I placed it in second was because I value interpretability above all else, and it is easier to explain 8 distinct groups than 11. I obviously wasn't satisfied with the baseline $K=7$ given that it was one of the most imbalanced in terms of cluster sizes despite being the easiest to interpret. The other intermediate models suffer from similar problems (having high standard deviations and swallowing large chunks of the data with two oversized clusters). 
 
 ![Cluster Centroid Distribution](plots/song_clusters_3d.png)
  
