@@ -139,7 +139,20 @@ Combining the within-cluster sum of squares, cluster count standard deviation, a
 
 A close second, and arguably another candidate for first, was $K = 11$, which is better mathematically, and was the model that tied $K=8$ for the lowest range of per-cluster song counts. The only reason I placed it in second was because I value interpretability above all else, and it is easier to explain 8 distinct groups than 11. I obviously wasn't satisfied with the baseline $K=7$ given that it was one of the most imbalanced in terms of cluster sizes despite being the easiest to interpret. The other intermediate models suffer from similar problems (having high standard deviations and swallowing large chunks of the data with two oversized clusters). 
 
-![Cluster Centroid Distribution](plots/song_clusters_3d.png)
+#### Centroid Coordinates & Sonic Interpretations for Optimal $K = 8$ ($J = 546.57$)
+
+| Cluster | Avg. Energy (0–7) | Avg. Positivity (0–6) | Avg. Introspectiveness (0–7) | Song Count | Primary Sonic Profile & Key Characteristics |
+|:---:|:---:|:---:|:---:|:---:|---|
+| **C0** | 3.522 | 5.520 | 5.126 | 17 | Upbeat, euphoric pop / joyful & affectionate personal self-reflection |
+| **C1** | 1.178 | 3.748 | 4.802 | 26 | Gentle acoustic ballad / warm, hopeful introspection |
+| **C2** | 6.869 | 1.882 | 3.605 | 19 | High-octane metalcore & heavy rock / explosive cathartic aggression |
+| **C3** | 4.386 | 0.908 | 5.015 | 13 | Driving alternative rock & dark pop / brooding angst & emotional tension |
+| **C4** | 4.450 | 2.981 | 5.428 | 27 | Dynamic mid-tempo pop-rock / contemplative, bittersweet introspection |
+| **C5** | 2.618 | 1.973 | 0.343 | 31 | Narrative-driven storytelling ballad / observational, outward interpersonal focus |
+| **C6** | 1.119 | 0.225 | 5.965 | 22 | Minimalist acoustic & ambient / raw, desolate melancholy & deep solitude |
+| **C7** | 4.331 | 3.309 | 1.896 | 12 | Punchy, rhythm-driven dance-pop / buoyant & outwardly engaged social storytelling |
+
+![Song Clusters for Optimal K=8 Model](plots/song_clusters_3d.png)
  
 ---
 
