@@ -32,6 +32,37 @@ def artist_cluster_distribution(
     return crosstab
 
 
+def cluster_count_statistics(
+    assignments: Union[List[int], np.ndarray], k: int
+) -> Dict[str, Any]:
+    """Compute summary statistics and standard deviation of cluster song counts (Stage 2).
+
+    Args:
+        assignments: 1D array of cluster indices (length N)
+        k: Total number of clusters K
+
+    Returns:
+        dict: Mean, sample/population standard deviations, min, max, CV, and counts list.
+    """
+    counts = np.bincount(np.asarray(assignments, dtype=int), minlength=k)
+    mean_val = float(np.mean(counts))
+    sample_std = float(np.std(counts, ddof=1)) if k > 1 else 0.0
+    pop_std = float(np.std(counts, ddof=0))
+    cv = float(sample_std / mean_val) if mean_val > 0 else 0.0
+
+    return {
+        "k": k,
+        "counts": counts.tolist(),
+        "mean": round(mean_val, 2),
+        "std_sample": round(sample_std, 2),
+        "std_population": round(pop_std, 2),
+        "cv": round(cv, 4),
+        "min": int(np.min(counts)),
+        "max": int(np.max(counts)),
+    }
+
+
+
 def artist_feature_averages(df: pd.DataFrame) -> pd.DataFrame:
     """Compute the average Energy, Positivity, and Introspectiveness for each artist.
 

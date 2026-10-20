@@ -12,7 +12,7 @@ from kmeans import (
     align_centroids,
     run_kmeans_trials,
 )
-from stats import compute_gini_impurity
+from stats import compute_gini_impurity, cluster_count_statistics
 
 
 class TestMathCalculations(unittest.TestCase):
@@ -115,6 +115,24 @@ class TestMathCalculations(unittest.TestCase):
         ])
         np.testing.assert_allclose(avg, expected_avg, atol=1e-5)
 
+    def test_cluster_count_statistics(self):
+        """Test calculation of per-cluster song count standard deviation and distribution metrics."""
+        # 3 clusters with counts: [10, 20, 30] -> mean = 20
+        # sample variance = ((10-20)^2 + (20-20)^2 + (30-20)^2) / 2 = 200 / 2 = 100 -> std = 10.0
+        # population variance = 200 / 3 = 66.67 -> std = 8.16
+        assignments = np.array([0] * 10 + [1] * 20 + [2] * 30)
+        stats_dict = cluster_count_statistics(assignments, k=3)
+
+        self.assertEqual(stats_dict["k"], 3)
+        self.assertEqual(stats_dict["counts"], [10, 20, 30])
+        self.assertEqual(stats_dict["mean"], 20.0)
+        self.assertAlmostEqual(stats_dict["std_sample"], 10.0, places=2)
+        self.assertAlmostEqual(stats_dict["std_population"], 8.16, places=2)
+        self.assertEqual(stats_dict["min"], 10)
+        self.assertEqual(stats_dict["max"], 30)
+        self.assertAlmostEqual(stats_dict["cv"], 0.5, places=2)
+
 
 if __name__ == "__main__":
     unittest.main()
+

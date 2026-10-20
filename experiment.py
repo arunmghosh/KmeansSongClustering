@@ -336,3 +336,113 @@ def save_experiment_plots(
     fig.tight_layout()
     fig.savefig(output_dir / "centroids_vs_artists_3d.png", dpi=200)
     plt.close(fig)
+
+    # 5. Album Average Coordinates & Evolution Trajectories by Artist (Stage 4)
+    save_album_trajectory_plot(output_dir=output_dir)
+
+
+def save_album_trajectory_plot(output_dir: Path) -> None:
+    """Generate and save publication-quality 3D plot of album averages and artist trajectories.
+
+    Plots average feature coordinates for each album (from album_averages.png analysis)
+    and highlights trajectory lines connecting albums written by the same artist.
+    """
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    albums = [
+        {"artist": "Crown The Empire", "album": "The Fallout", "energy": 5.83, "positivity": 2.06, "intro": 4.22, "label_pos": (-0.1, -0.25, 0.55)},
+        {"artist": "Crown The Empire", "album": "Dogma", "energy": 6.60, "positivity": 2.00, "intro": 4.40, "label_pos": (0.15, 0.1, 0.15)},
+        {"artist": "Against The Current", "album": "In Our Bones", "energy": 3.67, "positivity": 3.75, "intro": 4.00, "label_pos": (0.15, 0.15, 0.2)},
+        {"artist": "Against The Current", "album": "Fever", "energy": 5.57, "positivity": 2.00, "intro": 3.86, "label_pos": (0.15, -0.25, -0.25)},
+        {"artist": "Tate McRae", "album": "I Used To Think I Could Fly", "energy": 2.58, "positivity": 1.25, "intro": 2.67, "label_pos": (-0.3, -0.35, -0.35)},
+        {"artist": "Tate McRae", "album": "So Close To What", "energy": 3.73, "positivity": 2.93, "intro": 3.07, "label_pos": (0.15, -0.15, -0.55)},
+        {"artist": "Olivia Rodrigo", "album": "SOUR", "energy": 1.91, "positivity": 2.18, "intro": 1.36, "label_pos": (0.1, -0.25, -0.25)},
+        {"artist": "Olivia Rodrigo", "album": "You seem pretty sad...", "full_album": "You seem pretty sad for a girl so in love", "energy": 2.62, "positivity": 3.77, "intro": 4.00, "label_pos": (0.15, 0.15, 0.15)},
+        {"artist": "Sabrina Carpenter", "album": "Eyes Wide Open", "energy": 2.58, "positivity": 5.08, "intro": 5.42, "label_pos": (0.15, 0.15, 0.2)},
+        {"artist": "Sabrina Carpenter", "album": "Man's Best Friend", "energy": 2.54, "positivity": 3.31, "intro": 3.00, "label_pos": (-1.0, -0.2, -0.15)},
+        {"artist": "Erin LeCount", "album": "Soft Skin, Restless Bones", "energy": 2.33, "positivity": 1.17, "intro": 5.17, "label_pos": (0.15, -0.35, -0.35)},
+        {"artist": "Erin LeCount", "album": "Pareidolia", "energy": 2.33, "positivity": 1.83, "intro": 6.33, "label_pos": (0.15, 0.15, 0.2)},
+        {"artist": "Gracie Abrams", "album": "Daughter From Hell", "energy": 1.63, "positivity": 1.56, "intro": 4.56, "label_pos": (-1.1, -0.1, 0.35)},
+        {"artist": "Gracie Abrams", "album": "Good Riddance", "energy": 1.75, "positivity": 2.69, "intro": 4.94, "label_pos": (0.15, 0.15, 0.15)},
+    ]
+
+    artist_colors = {
+        "Against The Current": "#1f77b4",
+        "Crown The Empire": "#ff7f0e",
+        "Erin LeCount": "#d62728",
+        "Gracie Abrams": "#8c564b",
+        "Olivia Rodrigo": "#e377c2",
+        "Sabrina Carpenter": "#bcbd22",
+        "Tate McRae": "#17becf",
+    }
+
+    fig = plt.figure(figsize=(13, 9.5), dpi=300)
+    ax = fig.add_subplot(111, projection="3d")
+
+    ax.xaxis.pane.fill = True
+    ax.yaxis.pane.fill = True
+    ax.zaxis.pane.fill = True
+    ax.xaxis.pane.set_facecolor("#f9fbfd")
+    ax.yaxis.pane.set_facecolor("#f9fbfd")
+    ax.zaxis.pane.set_facecolor("#f6f8fa")
+    ax.xaxis.pane.set_edgecolor("#d0d7de")
+    ax.yaxis.pane.set_edgecolor("#d0d7de")
+    ax.zaxis.pane.set_edgecolor("#d0d7de")
+
+    by_artist = {}
+    for alb in albums:
+        by_artist.setdefault(alb["artist"], []).append(alb)
+
+    shifts = []
+    for artist, albs in by_artist.items():
+        p1 = np.array([albs[0]["energy"], albs[0]["positivity"], albs[0]["intro"]])
+        p2 = np.array([albs[1]["energy"], albs[1]["positivity"], albs[1]["intro"]])
+        dist = np.linalg.norm(p1 - p2)
+        shifts.append((dist, artist, albs, p1, p2))
+
+    shifts.sort(key=lambda x: x[0], reverse=True)
+
+    for dist, artist, albs, p1, p2 in shifts:
+        c = artist_colors[artist]
+        ax.plot([p1[0], p2[0]], [p1[1], p2[1]], [p1[2], p2[2]],
+                color=c, linewidth=7.5, alpha=0.22, zorder=3)
+        ax.plot([p1[0], p2[0]], [p1[1], p2[1]], [p1[2], p2[2]],
+                color=c, linewidth=2.8, linestyle="-", alpha=0.95, zorder=4,
+                label=f"{artist} (Δ = {dist:.2f})")
+
+    for alb in albums:
+        c = artist_colors[alb["artist"]]
+        p = np.array([alb["energy"], alb["positivity"], alb["intro"]])
+        ax.scatter(p[0], p[1], p[2], color=c, s=150, edgecolors="black", linewidths=1.4, zorder=6, alpha=0.95)
+        dx, dy, dz = alb["label_pos"]
+        ax.text(p[0] + dx, p[1] + dy, p[2] + dz, alb["album"],
+                fontsize=8.5, fontweight="bold", color="#111111",
+                bbox=dict(boxstyle="round,pad=0.28", facecolor="#ffffff", edgecolor=c, alpha=0.9, linewidth=1.1),
+                zorder=7)
+
+    ax.set_xlabel("Avg. Energy (0–7)", fontsize=11, fontweight="bold", labelpad=9)
+    ax.set_ylabel("Avg. Positivity (0–6)", fontsize=11, fontweight="bold", labelpad=9)
+    ax.set_zlabel("Avg. Introspectiveness (0–7)", fontsize=11, fontweight="bold", labelpad=9)
+
+    ax.set_xlim(1.0, 7.0)
+    ax.set_ylim(1.0, 6.0)
+    ax.set_zlim(1.0, 7.0)
+
+    ax.set_title("Album Average Coordinates & Evolution Trajectories by Artist\n(Feature Shifts Across Albums from album_averages.png)",
+                 fontsize=14, fontweight="bold", pad=18)
+
+    ax.view_init(elev=20, azim=-50)
+    ax.grid(True, linestyle=":", alpha=0.6, color="#b0b0b0")
+
+    ax.legend(bbox_to_anchor=(1.04, 1.0), loc="upper left", fontsize=9.5,
+              title="Artist Evolution Shift (Δ)", title_fontsize=10.5, frameon=True,
+              fancybox=True, edgecolor="#cccccc", facecolor="#ffffff")
+
+    fig.tight_layout()
+    fig.savefig(output_dir / "album_averages_trajectory_3d.png", bbox_inches="tight")
+    fig.savefig(output_dir / "album_averages_3d.png", bbox_inches="tight")
+    plt.close(fig)
