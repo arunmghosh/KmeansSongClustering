@@ -73,7 +73,7 @@ Here were my results from running the full experiment:
 ![Songs by Artist (3D Feature Space)](plots/songs_by_artist_3d.png)
 ![Cluster Centroids vs. Artist Average Coordinates](plots/centroids_vs_artists_3d.png)
 
-(Compare centroids to average scores of each feature for each artist)
+![Artist Average Coordinates](artist_averages.png)
 
 ---
 
