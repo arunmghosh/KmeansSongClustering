@@ -135,7 +135,7 @@ To check whether models space out centroids effectively or create redundant, ove
 
 #### Analysis: Which Value of $K$ is Best?
 
-Combining the within-cluster sum of squares, cluster count standard deviation, and inter-centroid spacing, I came to the conclusion that $K=8$ is optimal. We already observed that $K=14$ can't be the best model because it contains a singleton cluster. A singleton cluster inherently depresses the WCSS objective, and also doesn't create a cluster that has a real world musical meaning. By contrast, $K=8$ tied for the lowest range of per-cluster song counts, and had the greatest minimum cluster separation distance. In other words, it had the best combination of song spread among clusters and cluster spacing, balancing interpretability and mathematical optimization. 
+Combining the within-cluster sum of squares, cluster count standard deviation, and inter-centroid spacing, I came to the conclusion that $K=8$ is optimal. We already observed that $K=14$ can't be the best model because it contains a singleton cluster. A singleton cluster inherently depresses the WCSS objective, and also doesn't create a cluster that has a real world musical meaning. By contrast, $K=8$ tied for the lowest range of per-cluster song counts, and had a solid minimum cluster separation distance. In other words, it had the best combination of song spread among clusters and cluster spacing, balancing interpretability and mathematical optimization. 
 
 A close second, and arguably another candidate for first, was $K = 11$, which is better mathematically, and was the model that tied $K=8$ for the lowest range of per-cluster song counts. The only reason I placed it in second was because I value interpretability above all else, and it is easier to explain 8 distinct groups than 11. I obviously wasn't satisfied with the baseline $K=7$ given that it was one of the most imbalanced in terms of cluster sizes despite being the easiest to interpret. The other intermediate models suffer from similar problems (having high standard deviations and swallowing large chunks of the data with two oversized clusters). 
 
@@ -158,10 +158,23 @@ A close second, and arguably another candidate for first, was $K = 11$, which is
 
 ### 3. Distribution of Artists' Songs
 
+Let's take another look at the song distribution without plotting the centroids.
+
 ![Songs by Artist (3D Feature Space)](plots/songs_by_artist_3d.png)
+
+It may be hard to visualize since we're projecting 3D data onto a 2D screen, but accounting for inferred depth (going into the screen), we can see that the colors generally form clusters. However, as we are going to see, these clusters are not the same as the centroids we computed earlier. Here is a look at artist centers versus the K-means cluster centers. 
+
 ![Cluster Centroids vs. Artist Average Coordinates](plots/centroids_vs_artists_3d.png)
 
+As we can see in the above figure, there is no easy mapping from artists to centroids, as two or more artists seem to be relatively close to most of the centroids, and vice versa. This shows us that each artist has a range of different songs in the albums I choose to represent them with in the dataset. The next part of this investigation looks into how versatile each artist is (that is, how many different types of songs do they write?). To start, however, let's dive deeper into the artist centers and try to characterize their respective styles. 
+
 ![Artist Average Coordinates](artist_averages.png)
+
+Crown The Empire definitely has the most energy, and while Against The Current is not a close second, it is still far away from third place. Most of the artists have an energy score between 2-3 (rock ballads and moderate pop songs, below a characteristic energy level of a classic rock song). Gracie Abrams averages below that, highlighting her whispery pop / acoustic style. 
+
+Sabrina Carpenter is by far the most positive, with an average of 4 (hopeful). Olivia Rodrigo and Against The Current have about a 3 (bittersweet), which is still much higher than everyone else. Most others have around a 2 (irritated), and Erin LeCount even goes down to 1.5 (leaning into more anger).
+
+While she has the lowest average positivity score, Erin LeCount has the highest average score for introspectiveness with 5.75, far higher than anyone else. Gracie Abrams comes in second place with 4.75. Most artists have just over or under 4, which focuses on social norms. Tate McRae and Olivia Rodrigo have under 3, meaning they talk mainly about the qualities of other people in their songs (exes, or society, to name a couple).
 
 ---
 
