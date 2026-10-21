@@ -8,7 +8,7 @@ J = \sum_{i=1}^{k} \sum_{x \in C_i} \Vert{}x - \mu_i\Vert{}^2
 \
 Let mu denote the set of centroids, and C represent the function that assigns points x to centroids. 
 
-(Summary of results here)
+Through a qualitative assessment of models with $K=7$ through $K=14$, I determined that $K=8$ was optimal and $K=11$ was a good alternative. There seemed to be two clusters characterized by very high and very low energy respectively, while the mid-energy clusters had to be separated through varying positivity and introspectiveness. In general, more energy was loosely correlated with lower positivity and introspectiveness, but that trend was broken in more than a few instances. Low energy also had lower positivity but greater introspectiveness, for example. Lastly, Against The Current seemed to be the most versatile artist according to this specific dataset, but Sabrina Carpenter might win if more of both of their discographies are included. Similarly, on the lower end of the versatility distribution Crown The Empire might overtake Tate McRae if wider discographies are included, coming out of last place. 
 
 (Blog post forthcoming)
 
@@ -202,6 +202,8 @@ I_{G,\text{norm}} = \frac{I_G}{1 - 1/k} = \frac{8}{7} I_G
 | **Erin LeCount** | 12 | 5 / 8 | 0.7361 | 0.8413 |
 | **Crown The Empire** | 28 | 6 / 8 | **0.5561** | **0.6356** |
 
+Right off the bat, there are two major insights worth pointing out. Firstly, Against The Current is definitely the most versatile artist because they have songs in all eight clusters, and have the highest Normalized Gini Impurity score. By contrast, Crown The Empire is clearly the least versatile. Even though a couple other artists touch fewer clusters, most of the Crown The Empire songs had a 7 for energy, which was a distinguishing feature relative to the other artists. Thus, many Crown The Empire songs fell into a single cluster, contributing to the lowest Normalized Gini Impurity score. 
+
 #### Album Progression & Stylistic Evolution Trajectories
 
 In addition to static cluster diversity, versatility manifests in how an artist's sonic signature shifts across album eras. Analyzing `album_averages.png` reveals the 3D feature coordinates (Energy, Positivity, Introspectiveness) for each artist's albums:
@@ -222,19 +224,33 @@ Plotting these album averages as 3D coordinates and highlighting lines connectin
 | **Gracie Abrams** | *Good Riddance* (1.75, 2.69, 4.94) | *Daughter From Hell* (1.63, 1.56, 4.56) | **1.20** | $-0.12\text{ E}, -1.13\text{ P}, -0.38\text{ I}$ |
 | **Crown The Empire** | *The Fallout* (5.83, 2.06, 4.22) | *Dogma* (6.60, 2.00, 4.40) | **0.79** | $+0.77\text{ E}, -0.06\text{ P}, +0.18\text{ I}$ |
 
-**Key Insights:**
-- **High Versatility Artists Exhibit Dramatic Album Shifts**: Olivia Rodrigo ($\Delta = 3.16$) and Sabrina Carpenter ($\Delta = 3.00$) show the largest movement between projects. Olivia Rodrigo shifted substantially toward introspective, complex emotional arrangements ($+2.64$ introspectiveness), while Sabrina Carpenter moved from high-positivity youth pop into mature, moodier themes.
-- **Genre Transformations & Maximum Diversity**: Against The Current ($\Delta = 2.59$) achieves the highest versatility score ($I_G = 0.8421, I_{G,\text{norm}} = 0.9624$), uniquely spanning **all 8 out of 8 clusters** in the optimal $K=8$ model. Their album trajectory reflects a dramatic pivot toward heavier rock with a $+1.90$ boost in Energy and a $-1.75$ drop in Positivity.
-- **Focused Stylistic Anchors**: Crown The Empire ($\Delta = 0.79$) maintains an extraordinarily cohesive post-hardcore sonic profile with minimal drift between *The Fallout* and *Dogma*, consistent with having the lowest Gini Impurity score (**$0.5561$**, Normalized Gini **$0.6356$**), where 18 of their 28 songs concentrate heavily in heavy rock/metalcore (Cluster 2). Gracie Abrams ($\Delta = 1.20$) and Erin LeCount ($\Delta = 1.33$) also remain tightly anchored in low-energy, high-introspectiveness acoustic/ambient space.
+Olivia Rodrigo ($\Delta = 3.16$) and Sabrina Carpenter ($\Delta = 3.00$) show the largest movement between albums. Olivia Rodrigo shifted from raw heartbreak and bitterness in SOUR to more complex themes in her latest album, leaning less into external villains ($+2.64$ introspectiveness). Sabrina Carpenter moved in a different direction from the very naive, hopeful nature of first love into a more cynical but humorous take on modern romance.
+
+Against The Current ($\Delta = 2.59$) had the highest versatility score, which could be interpreted as a genre change from their first to most recent studio album. Their album trajectory reflects a dramatic pivot toward heavier rock with a $+1.90$ boost in Energy and a $-1.75$ drop in Positivity.
+
+Crown The Empire ($\Delta = 0.79$) maintains an extraordinarily cohesive pop-metal fusion profile with minimal drift between *The Fallout* and *Dogma*, consistent with having the lowest versatility. Gracie Abrams ($\Delta = 1.20$) and Erin LeCount ($\Delta = 1.33$) also remain tightly anchored in low-energy, high-introspectiveness styles.
 
 ---
 
 ### 5. Conclusions & Discussion
 
-(Compare results to predictions)
-(Discuss possible reasons for discrepancies)
-(Comment on anything that changed from the original specification)
-(Mention future work)
+As I expected, the $K=14$ model reduced the objective function the most relative to the baseline $K=7$ model but wasn't the optimal model to use. I was surprised, however, that both the $K=8$ and $K=11$ models were fairly decent fits to the data while every k-value close to them was not. This just goes to show that clustering is not an exact science and depends heavily on qualitative judgement calls. It is hard to preemptively come up with a validation test for the clusters since they are inherently unknown (hence I'm using K-means instead of a classification model). 
+
+The 8 cluster descriptions I interpreted from the coordinates of the cluster centers were:
+1. Upbeat pop, euphoric/joyous, positive self-reflection
+2. Gentle hopeful, introspective acoustic ballad
+3. Metal & heavy rock, aggression/frustration boiling over
+4. Cynical, angst/punk, emo rock
+5. Bittersweet, pop, contemplative
+6. Narrative-driven storytelling, ballad/manifesto, outward/relationship focus
+7. Minimalist ambiance, raw, melancholic & deep 
+8. Punchy, danceable, emphasis on social life
+
+Most of the categories seem to be on the less positive end of the spectrum, which does make sense since the music I chose for this dataset generally has that skew. There seems to be a more even split between energy and introspection levels, but not all combinations are present. Less energy tends to imply more introspection, and vice versa (though it should be noted that for moderate pop/rock, anger is directed both outward and inward). Cluster 6 (C5 in the above figures) is an interesting category because it blends intense storytelling with an outward focus. This reminds me of themes like "vanity of the empath", in which even people who aren't very outspoken can still be quietly self-focused and narcissistic. 
+
+In the versatility results, I was a little surprised by some of the results based on what I know about those artists from listening to most if not all of their respective discographies. It makes sense that Crown The Empire is the least versatile, but they have leaned into more mainstream fusion v.s. theatricality at different times, which isn't really captured here. Furthermore, I wasn't expecting Against The Current to be more versatile than Sabrina Carpenter, who has gone through so many creative transformations through her various albums. Perhaps the limited data (only 2 albums per artist) doesn't capture the full picture. Olivia Rodrigo has definitely undergone a big shift since SOUR, which was a very cohesive and tunnel-vision type of an album. Her latest album has a lot more comedy and playfulness to make some of the same themes feel more unique, and also blends in more nuanced/introspective insights. Lastly, I wasn't expecting Tate McRae's albums to be all that different, but there is a significant gap in positivity between the two (trending up). 
+
+In the future, I plan to develop software for people to take a playlist of songs and run a "favorite song tournament", choosing from various tournament formats, deciding what metrics to use to compare the songs, and utilizing a very basic neural network such as a DQN to learn the importance of each feature in deciding the winner of each match. 
 
 ---
 
