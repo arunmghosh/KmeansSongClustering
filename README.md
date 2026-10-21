@@ -10,7 +10,7 @@ Let mu denote the set of centroids, and C represent the function that assigns po
 
 Through a qualitative assessment of models with $K=7$ through $K=14$, I determined that $K=8$ was optimal and $K=11$ was a good alternative. There seemed to be two clusters characterized by very high and very low energy respectively, while the mid-energy clusters had to be separated through varying positivity and introspectiveness. In general, more energy was loosely correlated with lower positivity and introspectiveness, but that trend was broken in more than a few instances. Low energy also had lower positivity but greater introspectiveness, for example. Lastly, Against The Current seemed to be the most versatile artist according to this specific dataset, but Sabrina Carpenter might win if more of both of their discographies are included. Similarly, on the lower end of the versatility distribution Crown The Empire might overtake Tate McRae if wider discographies are included, coming out of last place. 
 
-(Blog post forthcoming)
+(Blog post: https://medium.com/@electric.rockfan/k-means-clustering-on-my-favorite-songs-51dc6e044707)
 
 For future work, I will develop a model to run a "favorite song tournament" that takes in a song dataset provided by the user (8-128 songs) and the number of songs in each match (2-8). It will prompt the user to enter the results for 1 round of the tournament, and use a feed-forward neural network to analyze the importance of each feature in the dataset in deciding match outcomes. Using that learned model, it will automatically complete the rest of the matches and display the results of the tournament. 
 
