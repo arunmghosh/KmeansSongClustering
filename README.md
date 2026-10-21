@@ -180,23 +180,27 @@ While she has the lowest average positivity score, Erin LeCount has the highest 
 
 ### 4. Versatility 
 
-To quantify the versatility of an artist's craft, I compute a versatility score for each artist based on the Gini Impurity of their song cluster assignments:
+To quantify the versatility of an artist's craft, I compute a versatility score for each artist based on the Gini Impurity of their song cluster assignments under the optimal $K=8$ model:
 
 ```math
 I_G = 1 - \sum_{i=1}^{k} p_i^2
 ```
 \
-Where $k$ denotes the number of clusters, and $p_i$ represents the proportion of an artist's songs assigned to cluster $i$. A score of 0 indicates that all songs belong to a single cluster (highly focused style), whereas higher values indicate songs scattered across multiple distinct clusters (greater versatility).
+Where $k=8$ denotes the number of clusters, and $p_i$ represents the proportion of an artist's songs assigned to cluster $i$. A score of 0 indicates that all songs belong to a single cluster (highly focused style), whereas higher values indicate songs scattered across multiple distinct clusters (greater versatility). The **Normalized Gini** scales the score relative to the theoretical maximum for $K=8$ ($I_{G,\max} = 1 - \frac{1}{8} = 0.875$):
 
-| Artist | Song Count | Clusters Touched | Gini Impurity | Normalized Gini |
+```math
+I_{G,\text{norm}} = \frac{I_G}{1 - 1/k} = \frac{8}{7} I_G
+```
+
+| Artist | Song Count | Clusters Touched | Gini Impurity ($I_G$) | Normalized Gini ($I_{G,\text{norm}}$) |
 |---|:---:|:---:|:---:|:---:|
-| Against The Current | 19 | 10 | 0.8753 | 0.9427 |
-| Olivia Rodrigo | 24 | 9 | 0.8611 | 0.9274 |
-| Sabrina Carpenter | 25 | 9 | 0.8416 | 0.9063 |
-| Tate McRae | 27 | 9 | 0.8368 | 0.9011 |
-| Gracie Abrams | 32 | 9 | 0.8281 | 0.8918 |
-| Erin LeCount | 12 | 6 | 0.7778 | 0.8376 |
-| Crown The Empire | 28 | 6 | 0.7168 | 0.7720 |
+| **Against The Current** | 19 | 8 / 8 | **0.8421** | **0.9624** |
+| **Tate McRae** | 27 | 6 / 8 | 0.7929 | 0.9061 |
+| **Sabrina Carpenter** | 25 | 6 / 8 | 0.7712 | 0.8814 |
+| **Olivia Rodrigo** | 24 | 6 / 8 | 0.7535 | 0.8611 |
+| **Gracie Abrams** | 32 | 5 / 8 | 0.7461 | 0.8527 |
+| **Erin LeCount** | 12 | 5 / 8 | 0.7361 | 0.8413 |
+| **Crown The Empire** | 28 | 6 / 8 | **0.5561** | **0.6356** |
 
 #### Album Progression & Stylistic Evolution Trajectories
 
@@ -220,8 +224,8 @@ Plotting these album averages as 3D coordinates and highlighting lines connectin
 
 **Key Insights:**
 - **High Versatility Artists Exhibit Dramatic Album Shifts**: Olivia Rodrigo ($\Delta = 3.16$) and Sabrina Carpenter ($\Delta = 3.00$) show the largest movement between projects. Olivia Rodrigo shifted substantially toward introspective, complex emotional arrangements ($+2.64$ introspectiveness), while Sabrina Carpenter moved from high-positivity youth pop into mature, moodier themes.
-- **Genre Transformations**: Against The Current ($\Delta = 2.59$) pivoted strongly toward heavier, aggressive rock with a massive $+1.90$ boost in Energy and a $-1.75$ drop in Positivity, matching their high Gini Impurity ranking.
-- **Focused Stylistic Anchors**: Crown The Empire ($\Delta = 0.79$) maintains an extraordinarily cohesive post-hardcore sonic profile with minimal drift between *The Fallout* and *Dogma*, consistent with having the lowest Gini Impurity score (0.7168). Gracie Abrams ($\Delta = 1.20$) and Erin LeCount ($\Delta = 1.33$) also remain tightly anchored in low-energy, high-introspectiveness acoustic/ambient space.
+- **Genre Transformations & Maximum Diversity**: Against The Current ($\Delta = 2.59$) achieves the highest versatility score ($I_G = 0.8421, I_{G,\text{norm}} = 0.9624$), uniquely spanning **all 8 out of 8 clusters** in the optimal $K=8$ model. Their album trajectory reflects a dramatic pivot toward heavier rock with a $+1.90$ boost in Energy and a $-1.75$ drop in Positivity.
+- **Focused Stylistic Anchors**: Crown The Empire ($\Delta = 0.79$) maintains an extraordinarily cohesive post-hardcore sonic profile with minimal drift between *The Fallout* and *Dogma*, consistent with having the lowest Gini Impurity score (**$0.5561$**, Normalized Gini **$0.6356$**), where 18 of their 28 songs concentrate heavily in heavy rock/metalcore (Cluster 2). Gracie Abrams ($\Delta = 1.20$) and Erin LeCount ($\Delta = 1.33$) also remain tightly anchored in low-energy, high-introspectiveness acoustic/ambient space.
 
 ---
 
